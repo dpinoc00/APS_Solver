@@ -25,3 +25,39 @@ plt.yticks(range(len(correlation.columns)), correlation.columns)
 plt.title("Matriz de Correlación (Variables Numéricas)")
 plt.tight_layout()
 plt.show()
+
+tipo = num_df["Browser"].value_counts()
+
+umbral = 0.02
+tipo_rel = tipo / tipo.sum()
+
+otros = tipo_rel[tipo_rel < umbral].sum()
+tipo_clean = tipo_rel[tipo_rel >= umbral]
+
+if otros > 0:
+    tipo_clean["Otros"] = otros
+
+plt.figure(figsize=(6,6))
+
+colores_pastel = [
+    "#d8b4fe",
+    "#f9a8d4",
+    "#fecdd3", 
+    "#fca5a5",
+    "#fdb4bf"   
+]
+
+plt.pie(
+    tipo_clean,
+    labels=tipo_clean.index,
+    autopct='%1.2f%%',
+    startangle=-450,
+    pctdistance=0.8,
+    labeldistance=1.1,
+    colors=colores_pastel[:len(tipo_clean)]
+)
+
+plt.title("Browsers used")
+plt.tight_layout()
+plt.show()
+
