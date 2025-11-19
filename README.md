@@ -10,3 +10,28 @@ Para abordar este problema, la tienda ha recopilado una cantidad significativa d
 
 https://www.kaggle.com/datasets/saadaliyaseen/shopping-behaviour-dataset/code
 
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("archivo.csv")
+
+plt.figure(figsize=(8, 4))
+plt.plot(df["Administrative"], label="Administrative")
+plt.plot(df["Administrative_Duration"], label="Administrative Duration")
+plt.xlabel("Índice")
+plt.ylabel("Valor")
+plt.title("Administrative vs Administrative Duration")
+plt.legend()
+plt.grid()
+plt.show()
+
+plt.figure(figsize=(8, 4))
+plt.plot(df["Informational"], label="Informational")
+plt.plot(df["Informational_Duration"], label="Informational Duration")
+plt.xlabel("Índice")
+plt.ylabel("Valor")
+plt.title("Informational vs Informational Duration")
+plt.legend()
+plt.grid()
+plt.show()
+
