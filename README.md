@@ -4,6 +4,16 @@ Azul claro	#A5C6E1	          rgba(165, 198, 225, 0.75)
 Azul oscuro	#183F56	          rgba(24, 63, 86, 0.75)
 Azul muy oscuro	#00243C	      rgba(0, 36, 60, 0.75)
 
+
+colores_pastel = [
+    "rgba(158, 28, 28, 0.75)",   # Granate
+    "rgba(255, 122, 122, 0.75)", # Rojo claro
+    "rgba(255, 122, 122, 0.75)", # Rojo claro (repetido)
+    "rgba(24, 63, 86, 0.75)",    # Azul oscuro
+    "rgba(0, 36, 60, 0.75)"      # Azul muy oscuro
+]
+
+
 # APS_Solver
 ## Motivación:
 Satisfacción de Usuarios en Compras Online Motivación En este trabajo utilizaremos un conjunto de datos disponible en UCI Machine Learning Repository sobre la intención de compra de los usuarios en plataformas de comercio electrónico. Este dataset fue recopilado para el análisis de comportamiento de compra de los usuarios en línea y es una herramienta valiosa para desarrollar modelos predictivos en el contexto del marketing y la experiencia del cliente. 
