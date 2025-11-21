@@ -31,10 +31,38 @@ Puedes explicar algo como:
 
 “Si hay tramos planos o irregulares, podría indicar que algunos usuarios pasan mucho tiempo sin navegar por muchas páginas o viceversa.”
 
-numeric_cols = [
-    'Administrative', 'Administrative_Duration',
-    'Informational', 'Informational_Duration',
-    'ProductRelated', 'ProductRelated_Duration',
-    'BounceRates', 'ExitRates', 'PageValues', 'SpecialDay'
-]
+
+
+
+grupo = datos.groupby("VisitorType")[["Administrative",
+                                      "Informational",
+                                      "ProductRelated"]].mean()
+
+grupo = grupo.loc[["New_Visitor", "Returning_Visitor"]]
+plt.figure(figsize=(10,6))
+
+x = range(len(grupo.columns))
+
+new_vals = grupo.loc["New_Visitor"]
+ret_vals = grupo.loc["Returning_Visitor"]
+
+width = 0.35
+
+plt.bar([i - width/2 for i in x], new_vals, width=width,
+        label="New Visitor", color="#a78bfa")
+plt.bar([i + width/2 for i in x], ret_vals, width=width,
+        label="Returning Visitor", color="#f9a8d4")  
+
+plt.xticks(x, ["Administrative", "Informational", "ProductRelated"])
+plt.ylabel("Páginas visitadas (promedio)")
+plt.title("Páginas visitadas por tipo de visitante")
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+
+
+1) Promedio mensual de las interacciones de los usuarios en las categorías ProductRelated, Informational y Administrative. Compara el comportamiento de los usuarios en cada tipo de actividad por mes. El gráfico muestra que los meses donde los usuarios más entran a la pagina web son enero y noviembre y que la sección de productos de la página web es la que más paginas visitadas tiene.
+2) Heatmap: matriz de correlación. Muestra la fuerza que tienen las relaciones entre las diferentes variables para saber el peso con el que influye una en otra. El gráfico muestra que BounceRates está muy relacionada con ExitRates con un 0.91, ProductRelated y ProductRelated_Duration también tienen gran peso el uno en el otro. Los que menos correlación tienen son el número de páginas visitadas en la sección administrativa con la tasa de salida lo que indica que en la sección administrativa los usuarios no tienden a salir de la página.
 
