@@ -1,17 +1,8 @@
-Granate (rojo oscuro)	#9E1C1C	rgba(158, 28, 28, 0.75)
-Rojo claro	#FF7A7A	          rgba(255, 122, 122, 0.75)
-Azul claro	#A5C6E1	          rgba(165, 198, 225, 0.75)
-Azul oscuro	#183F56	          rgba(24, 63, 86, 0.75)
-Azul muy oscuro	#00243C	      rgba(0, 36, 60, 0.75)
-
-
-colores_pastel = [
-    "rgba(158, 28, 28, 0.75)",   # Granate
-    "rgba(255, 122, 122, 0.75)", # Rojo claro
-    "rgba(255, 122, 122, 0.75)", # Rojo claro (repetido)
-    "rgba(24, 63, 86, 0.75)",    # Azul oscuro
-    "rgba(0, 36, 60, 0.75)"      # Azul muy oscuro
-]
+Rojo oscuro (granate): #9E1C1C
+Rojo claro (rosado): #FF7A7A
+Azul claro: #A5C6E1
+Azul oscuro: #183F56
+Azul muy oscuro: #00243C
 
 
 # APS_Solver
