@@ -65,4 +65,11 @@ plt.show()
 
 1) Promedio mensual de las interacciones de los usuarios en las categorías ProductRelated, Informational y Administrative. Compara el comportamiento de los usuarios en cada tipo de actividad por mes. El gráfico muestra que los meses donde los usuarios más entran a la pagina web son enero y noviembre y que la sección de productos de la página web es la que más paginas visitadas tiene.
 2) Heatmap: matriz de correlación. Muestra la fuerza que tienen las relaciones entre las diferentes variables para saber el peso con el que influye una en otra. El gráfico muestra que BounceRates está muy relacionada con ExitRates con un 0.91, ProductRelated y ProductRelated_Duration también tienen gran peso el uno en el otro. Los que menos correlación tienen son el número de páginas visitadas en la sección administrativa con la tasa de salida lo que indica que en la sección administrativa los usuarios no tienden a salir de la página.
+3) 
+
+16)Gráfico de barras: Revenue a lo largo de los meses
+El gráfico muestra cómo varía la proporción de usuarios que completan o no la compra (Revenue) a lo largo de los diferentes meses del año.
+Se pueden observar fluctuaciones mensuales en la tasa de conversión, con algunos meses mostrando un mayor número de usuarios que finalizan la compra y otros donde la conversión es menor.
+Estas variaciones podrían estar relacionadas con factores como promociones, eventos especiales, o cambios en el comportamiento de los usuarios. Por ejemplo, noviembre es el mes en el que más usuarios finalizan la compra lo que estaría relacionado con la promoción anual de “Black Friday”.
+
 
