@@ -8,30 +8,31 @@ El reto para la tienda en línea es claro: el mercado de comercio electrónico e
 
 Para abordar este problema, la tienda ha recopilado una cantidad significativa de datos sobre el comportamiento de los usuarios en el sitio web, que incluyen información sobre las visitas, el t iempo de permanencia, la interacción con las páginas de productos y las características de los usuarios, como la duración de la sesión y la hora del día en que accedieron a la tienda. Sin embargo, el equipo de marketing y ventas no tiene claridad sobre qué factores están influyendo realmente en la intención de compra, y cómo pueden mejorar la experiencia del usuario para aumentar la tasa de conversión. Tu misión como analista de datos es ayudar a la tienda a entender estos patrones. Deberás  desarrollar un modelo predictivo que permita identificar si un usuario tiene alta o baja probabilidad de realizar una compra, basándose en su comportamiento y características demográficas. Con esta información, la tienda podrá ajustar su estrategia de marketing, optimizar la interfaz del sitio y mejorar la experiencia de usuario para incrementar las ventas y la fidelidad de los clientes. 
 
-https://www.kaggle.com/datasets/saadaliyaseen/shopping-behaviour-dataset/code
 
-import pandas as pd
-import matplotlib.pyplot as plt
+grupo = datos.groupby("VisitorType")[["Administrative",
+                                      "Informational",
+                                      "ProductRelated"]].mean()
 
-df = pd.read_csv("archivo.csv")
+grupo = grupo.loc[["New_Visitor", "Returning_Visitor"]]
+plt.figure(figsize=(10,6))
 
-plt.figure(figsize=(8, 4))
-plt.plot(df["Administrative"], label="Administrative")
-plt.plot(df["Administrative_Duration"], label="Administrative Duration")
-plt.xlabel("Índice")
-plt.ylabel("Valor")
-plt.title("Administrative vs Administrative Duration")
+x = range(len(grupo.columns))
+
+new_vals = grupo.loc["New_Visitor"]
+ret_vals = grupo.loc["Returning_Visitor"]
+
+width = 0.35
+
+plt.bar([i - width/2 for i in x], new_vals, width=width,
+        label="New Visitor", color="#a78bfa")
+plt.bar([i + width/2 for i in x], ret_vals, width=width,
+        label="Returning Visitor", color="#f9a8d4")  
+
+plt.xticks(x, ["Administrative", "Informational", "ProductRelated"])
+plt.ylabel("Páginas visitadas (promedio)")
+plt.title("Páginas visitadas por tipo de visitante")
 plt.legend()
-plt.grid()
-plt.show()
 
-plt.figure(figsize=(8, 4))
-plt.plot(df["Informational"], label="Informational")
-plt.plot(df["Informational_Duration"], label="Informational Duration")
-plt.xlabel("Índice")
-plt.ylabel("Valor")
-plt.title("Informational vs Informational Duration")
-plt.legend()
-plt.grid()
+plt.tight_layout()
 plt.show()
 
