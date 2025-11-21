@@ -9,15 +9,24 @@ El reto para la tienda en línea es claro: el mercado de comercio electrónico e
 Para abordar este problema, la tienda ha recopilado una cantidad significativa de datos sobre el comportamiento de los usuarios en el sitio web, que incluyen información sobre las visitas, el t iempo de permanencia, la interacción con las páginas de productos y las características de los usuarios, como la duración de la sesión y la hora del día en que accedieron a la tienda. Sin embargo, el equipo de marketing y ventas no tiene claridad sobre qué factores están influyendo realmente en la intención de compra, y cómo pueden mejorar la experiencia del usuario para aumentar la tasa de conversión. Tu misión como analista de datos es ayudar a la tienda a entender estos patrones. Deberás  desarrollar un modelo predictivo que permita identificar si un usuario tiene alta o baja probabilidad de realizar una compra, basándose en su comportamiento y características demográficas. Con esta información, la tienda podrá ajustar su estrategia de marketing, optimizar la interfaz del sitio y mejorar la experiencia de usuario para incrementar las ventas y la fidelidad de los clientes. 
 
 
-grupo = datos.groupby("VisitorType")[["Administrative",
-df = datos.sort_values("Informational_Duration")
+Cómo introducirlo
 
-plt.figure(figsize=(8, 4))
-plt.plot(df["Informational_Duration"], df["Informational"], marker="o")
-plt.xlabel("Informational Duration")
-plt.ylabel("Informational")
-plt.title("Relación entre Informational y Duration (ordenada)")
-plt.grid()
-plt.show()
+“Este gráfico representa cómo se relaciona el número de páginas informativas visitadas por un usuario (‘Informational’) con el tiempo total que pasa en esa sección (‘Informational Duration’).”
 
+Qué muestra el eje X y el eje Y
 
+Eje X – Informational Duration:
+Indica cuántos segundos permaneció el usuario navegando en la sección informativa.
+
+Eje Y – Informational:
+Muestra cuántas páginas informativas visitó el usuario durante esa sesión.
+
+Cómo interpretar la curva
+
+Puedes explicar algo como:
+
+“La línea muestra cómo cambia la cantidad de páginas consultadas a medida que aumenta la duración en la sección informativa.”
+
+“Si la curva tiene tendencia ascendente, significa que cuanto más tiempo pasa el usuario en el área informativa, más páginas visita.”
+
+“Si hay tramos planos o irregulares, podría indicar que algunos usuarios pasan mucho tiempo sin navegar por muchas páginas o viceversa.”
