@@ -10,29 +10,14 @@ Para abordar este problema, la tienda ha recopilado una cantidad significativa d
 
 
 grupo = datos.groupby("VisitorType")[["Administrative",
-                                      "Informational",
-                                      "ProductRelated"]].mean()
+df = datos.sort_values("Informational_Duration")
 
-grupo = grupo.loc[["New_Visitor", "Returning_Visitor"]]
-plt.figure(figsize=(10,6))
-
-x = range(len(grupo.columns))
-
-new_vals = grupo.loc["New_Visitor"]
-ret_vals = grupo.loc["Returning_Visitor"]
-
-width = 0.35
-
-plt.bar([i - width/2 for i in x], new_vals, width=width,
-        label="New Visitor", color="#a78bfa")
-plt.bar([i + width/2 for i in x], ret_vals, width=width,
-        label="Returning Visitor", color="#f9a8d4")  
-
-plt.xticks(x, ["Administrative", "Informational", "ProductRelated"])
-plt.ylabel("Páginas visitadas (promedio)")
-plt.title("Páginas visitadas por tipo de visitante")
-plt.legend()
-
-plt.tight_layout()
+plt.figure(figsize=(8, 4))
+plt.plot(df["Informational_Duration"], df["Informational"], marker="o")
+plt.xlabel("Informational Duration")
+plt.ylabel("Informational")
+plt.title("Relación entre Informational y Duration (ordenada)")
+plt.grid()
 plt.show()
+
 
