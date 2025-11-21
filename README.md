@@ -86,6 +86,7 @@ ExitRates vs Revenue: Este gráfico muestra cómo varía la **tasa de abandono**
 
 PageValues vs Revenue: Este gráfico muestra la **interacción con la página web** en relación con si el usuario realiza una compra. Cuando **Revenue es False** (no compraron), los usuarios tienden a tener un menor nivel de interacción con la página, con pocos valores atípicos. En cambio, cuando **Revenue es True** (compraron), los usuarios muestran una mayor variabilidad en su interacción con la página, con algunos casos de interacción muy alta, lo que sugiere que los compradores suelen interactuar más con la página antes de realizar una compra.
 
+El gráfico permite visualizar que visitantes nuevos y recurrentes recorren un número parecido de páginas en las secciones Informational y Administrative; por lo tanto, estas áreas del sitio no presentan distinciones significativas entre ambos grupos. En contraste, en ProductRelated, los visitantes recurrentes exploran muchas más páginas de productos, demostrando mayor interés y familiaridad con el sitio, mientras los nuevos visitantes interactúan menos con esta sección.
 
 
 11)Gráfico de barras: Revenue a lo largo de los meses
