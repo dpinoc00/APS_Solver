@@ -78,6 +78,9 @@ Cuando la línea es ascendente, indica que a mayor tiempo, más páginas consult
 Permite analizar ela cantidad de páginas administrativas visitadas en función del tiempo dedicado, ordena los registros por duración. 
 Cada curva ascendente señala que más tiempo implica mayor número de páginas visitadas; irregularidades o segmentos planos señalan diferencias en cómo los usuarios web emplean el tiempo en esta sección.
 
+ExitRates vs Revenue: Este gráfico muestra cómo varía la **tasa de abandono** de los usuarios en función de si realizaron una compra o no (Revenue). Cuando **Revenue es False** (no compraron), los usuarios tienen una tasa de abandono más baja y concentrada, lo que sugiere que los usuarios que no compran no abandonan la página con tanta frecuencia. Sin embargo, cuando **Revenue es True** (compraron), hay una mayor dispersión en la tasa de abandono, indicando que algunos compradores abandonan la página después de la compra, mientras que otros permanecen en ella.
+
+PageValues vs Revenue: Este gráfico muestra la **interacción con la página web** en relación con si el usuario realiza una compra. Cuando **Revenue es False** (no compraron), los usuarios tienden a tener un menor nivel de interacción con la página, con pocos valores atípicos. En cambio, cuando **Revenue es True** (compraron), los usuarios muestran una mayor variabilidad en su interacción con la página, con algunos casos de interacción muy alta, lo que sugiere que los compradores suelen interactuar más con la página antes de realizar una compra.
 
 
 11)Gráfico de barras: Revenue a lo largo de los meses
