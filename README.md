@@ -30,3 +30,11 @@ Puedes explicar algo como:
 “Si la curva tiene tendencia ascendente, significa que cuanto más tiempo pasa el usuario en el área informativa, más páginas visita.”
 
 “Si hay tramos planos o irregulares, podría indicar que algunos usuarios pasan mucho tiempo sin navegar por muchas páginas o viceversa.”
+
+numeric_cols = [
+    'Administrative', 'Administrative_Duration',
+    'Informational', 'Informational_Duration',
+    'ProductRelated', 'ProductRelated_Duration',
+    'BounceRates', 'ExitRates', 'PageValues', 'SpecialDay'
+]
+
