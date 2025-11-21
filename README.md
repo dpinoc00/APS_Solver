@@ -78,13 +78,7 @@ Cuando la línea es ascendente, indica que a mayor tiempo, más páginas consult
 Permite analizar ela cantidad de páginas administrativas visitadas en función del tiempo dedicado, ordena los registros por duración. 
 Cada curva ascendente señala que más tiempo implica mayor número de páginas visitadas; irregularidades o segmentos planos señalan diferencias en cómo los usuarios web emplean el tiempo en esta sección.
 
-10)ExitRates vs Revenue
 
-El gráfico compara la distribución de ExitRates en sesiones con ingresos (Revenue=True) y sin ingresos (Revenue=False). Cada caja muestra el rango intercuartílico, la línea interna es la mediana y los puntos fuera del “bigote” son valores atípicos.
-
-Las sesiones que generan ingresos tienen medianas de ExitRate más bajas, indicando que los usuarios que convierten tienden a permanecer más tiempo.
-Las sesiones sin ingresos muestran mayor dispersión y más valores extremos, reflejando comportamientos muy variados.
-Un ExitRate bajo se asocia con mayor probabilidad de conversión.
 
 11)Gráfico de barras: Revenue a lo largo de los meses
 El gráfico muestra cómo varía la proporción de usuarios que completan o no la compra (Revenue) a lo largo de los diferentes meses del año.
