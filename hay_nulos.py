@@ -25,4 +25,12 @@ df.to_csv("online_shoppers_intention_clean.csv", index=False)
 
 print("Tratamiento completado. Archivo guardado como 'online_shoppers_intention_clean.csv'.")
 
+# Buscar caracteres inusuales en columnas tipo texto
+for col in cat_cols:
+    print(f"\nRevisando columna: {col}")
+    mask = df[col].astype(str).str.contains(r"[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ .,_\-\/]", na=False)
+    if mask.sum() > 0:
+        print(df.loc[mask, col].unique())
+    else:
+        print("Sin caracteres extraños")
 
