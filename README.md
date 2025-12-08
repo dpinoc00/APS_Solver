@@ -1,10 +1,3 @@
-Rojo oscuro (granate): #9E1C1C
-Rojo claro (rosado): #FF7A7A
-Azul claro: #A5C6E1
-Azul oscuro: #183F56
-Azul muy oscuro: #00243C
-
-
 # APS_Solver
 ## Motivación:
 Satisfacción de Usuarios en Compras Online Motivación En este trabajo utilizaremos un conjunto de datos disponible en UCI Machine Learning Repository sobre la intención de compra de los usuarios en plataformas de comercio electrónico. Este dataset fue recopilado para el análisis de comportamiento de compra de los usuarios en línea y es una herramienta valiosa para desarrollar modelos predictivos en el contexto del marketing y la experiencia del cliente. 
