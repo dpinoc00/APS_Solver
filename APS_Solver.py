@@ -42,22 +42,8 @@ class APS_Solver:
         # Eliminar duplicados
         df = df.drop_duplicates()
 
-        # Rellenar nulos numéricos con la media
-        num_cols = df.select_dtypes(include=[np.number]).columns
-        df[num_cols] = df[num_cols].fillna(df[num_cols].mean())
-
-        # Rellenar nulos categóricos con la moda
-        cat_cols = df.select_dtypes(include=['object', 'bool']).columns
-        for col in cat_cols:
-            df[col] = df[col].fillna(df[col].mode()[0])
-
         # Codificar categóricas
         df = self._encode_categorical(df, fit)
-
-        # Escalar numéricas
-        # Rellenar nulos numéricos
-        num_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c != "Revenue"]
-        df[num_cols] = df[num_cols].fillna(df[num_cols].mean())
         
         # Escalar numéricas
         num_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c != "Revenue"]
