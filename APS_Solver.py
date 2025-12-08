@@ -16,19 +16,48 @@ class APS_Solver:
         self.model = None
         self.preprocessor = None
         self.pipeline = None
-    
+
+    def _nulos_duplicados(self):        
+        df = pd.read_csv("online_shoppers_intention_clean.csv")
+        
+        print("Valores nulos por columna:")
+        print(df.isnull().sum())
+
+        print("\nFilas duplicadas:", df.duplicated().sum())
+        
+        df = df.drop_duplicates()
+        num_cols = df.select_dtypes(include=['int64', 'float64']).columns
+        df[num_cols] = df[num_cols].fillna(df[num_cols].mean())
+        
+        # --- 3. Rellenar valores nulos categóricos con la moda ---
+        cat_cols = df.select_dtypes(include=['object', 'bool']).columns
+        for col in cat_cols:
+            df[col] = df[col].fillna(df[col].mode()[0])
+        
+        df.to_csv("online_shoppers_intention_clean.csv", index=False)
+        
+        print("Tratamiento completado. Archivo guardado como 'online_shoppers_intention_clean.csv'.")
+        
+        # Buscar caracteres inusuales en columnas tipo texto
+        for col in cat_cols:
+            print(f"\nRevisando columna: {col}")
+            mask = df[col].astype(str).str.contains(r"[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ .,_\-\/]", na=False)
+            if mask.sum() > 0:
+                print(df.loc[mask, col].unique())
+            else:
+                print("Sin caracteres extraños")
+   
 
     # Cargar modelo
     def load_model(self, model_path):
-        self.pipeline = joblib.load(model_path)
-        self.model = self.pipeline.named_steps["classifier"]
-        print("Modelo cargado correctamente.")
+        with open(model_path, 'rb') as f:
+            self.model, self.scaler, self.label_encoders = pickle.load(f)
 
 
     # Guardar modelo
     def save_model(self, model_path):
-        joblib.dump(self.pipeline, model_path)
-        print("Modelo guardado en:", model_path)
+        with open(model_path, 'wb') as f:
+            pickle.dump((self.model, self.scaler, self.label_encoders), f)
 
     # Procesamiento general
     def _prepare_data(self, df):
