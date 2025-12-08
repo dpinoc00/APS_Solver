@@ -55,15 +55,19 @@ class APS_Solver:
         df = self._encode_categorical(df, fit)
 
         # Escalar numéricas
-        num_cols = df.select_dtypes(include=[np.number]).columns
-
+        # Rellenar nulos numéricos
+        num_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c != "Revenue"]
+        df[num_cols] = df[num_cols].fillna(df[num_cols].mean())
+        
+        # Escalar numéricas
+        num_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c != "Revenue"]
         if fit:
             self.scaler = StandardScaler()
             df[num_cols] = self.scaler.fit_transform(df[num_cols])
         else:
             df[num_cols] = self.scaler.transform(df[num_cols])
-
-        return df
+        
+        return df 
 
     # ------------------------------------------------------
     # CARGAR MODELO
@@ -142,3 +146,18 @@ class APS_Solver:
         print("Precisión:", precision)
         print("Recall:", recall)
         print("F1-score:", f1)
+
+
+df = pd.read_csv("online_shoppers_intention.csv")
+
+train_df, test_df = train_test_split(df, test_size=0.3, random_state=42, stratify=df["Revenue"])
+
+train_df.to_csv("online_shoppers_train.csv", index=False)
+test_df.to_csv("online_shoppers_test.csv", index=False)
+
+
+model = APS_Solver()
+print('Para el train:')
+model.train_model("online_shoppers_train.csv")
+print('\nPara el test:')
+model.test_model("online_shoppers_test.csv")
