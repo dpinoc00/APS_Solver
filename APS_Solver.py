@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import joblib
+import pickle
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -13,93 +13,73 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 class APS_Solver:
 
     def __init__(self):
-        self.model = None
-        self.preprocessor = None
         self.pipeline = None
 
-    def _nulos_duplicados(self):        
-        df = pd.read_csv("online_shoppers_intention_clean.csv")
-        
-        print("Valores nulos por columna:")
-        print(df.isnull().sum())
 
-        print("\nFilas duplicadas:", df.duplicated().sum())
-        
+    # ------------------------------------------
+    # LIMPIEZA BÁSICA UTILIZADA EN TRAIN Y TEST
+    # ------------------------------------------
+    def _clean_data(self, df):
+
+        # Eliminar duplicados
         df = df.drop_duplicates()
-        num_cols = df.select_dtypes(include=['int64', 'float64']).columns
+
+        # Separar numéricas y categóricas
+        num_cols = df.select_dtypes(include=[np.number]).columns
+        cat_cols = df.select_dtypes(include=["object", "bool"]).columns
+
+        # Rellenar nulos → MEDIA / MODA
         df[num_cols] = df[num_cols].fillna(df[num_cols].mean())
-        
-        # --- 3. Rellenar valores nulos categóricos con la moda ---
-        cat_cols = df.select_dtypes(include=['object', 'bool']).columns
+
         for col in cat_cols:
             df[col] = df[col].fillna(df[col].mode()[0])
-        
-        df.to_csv("online_shoppers_intention_clean.csv", index=False)
-        
-        print("Tratamiento completado. Archivo guardado como 'online_shoppers_intention_clean.csv'.")
-        
-        # Buscar caracteres inusuales en columnas tipo texto
-        for col in cat_cols:
-            print(f"\nRevisando columna: {col}")
-            mask = df[col].astype(str).str.contains(r"[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ .,_\-\/]", na=False)
-            if mask.sum() > 0:
-                print(df.loc[mask, col].unique())
-            else:
-                print("Sin caracteres extraños")
-   
 
-    # Cargar modelo
+        return df
+
+
+    # ------------------------------------------
+    # LOAD MODEL
+    # ------------------------------------------
     def load_model(self, model_path):
-        with open(model_path, 'rb') as f:
-            self.model, self.scaler, self.label_encoders = pickle.load(f)
+        with open(model_path, "rb") as f:
+            self.pipeline = pickle.load(f)
 
 
-    # Guardar modelo
+    # ------------------------------------------
+    # SAVE MODEL
+    # ------------------------------------------
     def save_model(self, model_path):
-        with open(model_path, 'wb') as f:
-            pickle.dump((self.model, self.scaler, self.label_encoders), f)
+        with open(model_path, "wb") as f:
+            pickle.dump(self.pipeline, f)
 
-    # Procesamiento general
-    def _prepare_data(self, df):
 
-        # Limpieza básica
-        df = df.dropna()
+    # ------------------------------------------
+    # TRAIN MODEL
+    # ------------------------------------------
+    def train_model(self, file_path):
 
-        # Separar X e y si existe la columna Revenue
-        if "Revenue" in df.columns:
-            X = df.drop("Revenue", axis=1)
-            y = df["Revenue"]
-        else:
-            X = df
-            y = None
+        df = pd.read_csv(file_path)
 
-        # Identificar variables
+        # Limpieza homogénea
+        df = self._clean_data(df)
+
+        # Separar X e y
+        X = df.drop("Revenue", axis=1)
+        y = df["Revenue"]
+
+        # Tipos de columnas
         numerical = X.select_dtypes(include=[np.number]).columns.tolist()
-        categorical = X.select_dtypes(include=["object"]).columns.tolist()
+        categorical = X.select_dtypes(include=["object", "bool"]).columns.tolist()
 
         # Preprocesador
-        self.preprocessor = ColumnTransformer(
+        preprocessor = ColumnTransformer(
             transformers=[
                 ('num', StandardScaler(), numerical),
                 ('cat', OneHotEncoder(handle_unknown="ignore"), categorical)
             ]
         )
 
-        return X, y
-    
-
-    # ENTRENAMIENTO
-    def train_model(self, file_path):
-
-        df = pd.read_csv(file_path)
-        X, y = self._prepare_data(df)
-
-        # División train/test para validar
-        X_train, X_val, y_train, y_val = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
-
-        # Modelo principal
+        # Modelo
         model = RandomForestClassifier(
             n_estimators=300,
             max_depth=12,
@@ -108,31 +88,38 @@ class APS_Solver:
 
         # Pipeline completo
         self.pipeline = Pipeline(steps=[
-            ('preprocess', self.preprocessor),
+            ('preprocess', preprocessor),
             ('classifier', model)
         ])
 
-        # Entrenar
+        # Train/test interno
+        X_train, X_val, y_train, y_val = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+
+        # Entrenamiento
         self.pipeline.fit(X_train, y_train)
 
         # Validación interna
         y_pred = self.pipeline.predict(X_val)
+
         print("\n--- VALIDACIÓN INTERNA ---")
         print("Accuracy:", accuracy_score(y_val, y_pred))
         print("Precision:", precision_score(y_val, y_pred))
         print("Recall:", recall_score(y_val, y_pred))
         print("F1:", f1_score(y_val, y_pred))
 
-        self.model = model
 
-
-   #TEST FINAL
+    # ------------------------------------------
+    # TEST MODEL
+    # ------------------------------------------
     def test_model(self, file_path):
 
         df_test = pd.read_csv(file_path)
 
-        # Preparar datos (pero SIN reentrenar preprocesador)
-        # Usar columnas necesarias
+        # MISMA limpieza exacta que en entrenamiento
+        df_test = self._clean_data(df_test)
+
         X_test = df_test.drop("Revenue", axis=1)
         y_test = df_test["Revenue"]
 
@@ -150,10 +137,3 @@ class APS_Solver:
         print("Precisión:", precision)
         print("Recall:", recall)
         print("F1-score:", f1)
-
-if __name__ == "__main__":
-    # Ejemplo de uso (descomentar y adaptar paths si corres localmente)
-    # solver = APS_Solver()
-    # solver.train_model("online_shoppers_train.csv", do_gridsearch=False)
-    # solver.test_model("online_shoppers_test.csv")
-    pass
