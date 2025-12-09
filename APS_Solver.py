@@ -22,13 +22,37 @@ class APS_Solver:
         self.label_encoders = {}
         self.preprocessor_cluster = None
 
-    # ------------------------------------------------------
-    # CODIFICACIÓN DE CATEGÓRICAS
-    # ------------------------------------------------------
+    def save_model(self, file_path):
+        with open(file_path, "wb") as f:
+            pickle.dump(
+                (
+                    self.model,
+                    self.scaler,
+                    self.label_encoders,
+                    self.preprocessor_cluster
+                ),
+                f
+            )
+        print(f"Modelo guardado en: {file_path}")
+
+    def load_model(self, file_path):
+        with open(file_path, "rb") as f:
+            (
+                self.model,
+                self.scaler,
+                self.label_encoders,
+                self.preprocessor_cluster
+            ) = pickle.load(f)
+        print(f"Modelo cargado desde: {file_path}")
+
+    
+    
     def _encode_categorical(self, df, fit=True):
+        ''''Codificación de variables categóricas'''
         df = df.copy()
         categorical_columns = df.select_dtypes(include=["object", "bool"]).columns
-
+        
+        
         for col in categorical_columns:
             if fit:
                 le = LabelEncoder()
@@ -44,27 +68,27 @@ class APS_Solver:
     # LIMPIEZA Y PREPROCESADO
     # ------------------------------------------------------
     def _preprocess(self, df, fit=True):
+        
+        #eliminar duplicados
         df = df.copy().drop_duplicates()
 
-        # -------- Eliminación de columnas irrelevantes --------
+        #eliminar col poco correlacionadas con Revenue
         drop_cols = ["OperatingSystems", "Browser", "Region", "TrafficType"]
         df = df.drop(columns=[c for c in drop_cols if c in df.columns])
 
-        # Eliminación de valores NULL
         num_cols = [
             "Administrative","Administrative_Duration",
             "Informational","Informational_Duration",
             "ProductRelated","ProductRelated_Duration",
             "BounceRates","ExitRates","PageValues"
         ]
-        #para las variables numericas: mediana
         for col in num_cols:
             if col in df.columns:
                 df[col] = df[col].fillna(df[col].median())
+
         if "SpecialDay" in df.columns:
             df["SpecialDay"] = df["SpecialDay"].fillna(0)
 
-        # -------- VisitorType --------
         if "VisitorType" in df.columns:
             df["VisitorType"] = (
                 df["VisitorType"]
@@ -82,25 +106,25 @@ class APS_Solver:
             }
             df["VisitorType"] = df["VisitorType"].replace(visitor_map).fillna("Other")
 
-        # -------- Month --------
         if "Month" in df.columns:
             df["Month"] = df["Month"].astype(str).str.strip()
             df["Month"] = df["Month"].apply(self._correct_month)
 
-        # -------- Booleanos --------
         for col in ["Weekend", "Revenue"]:
             if col in df.columns:
                 df[col] = df[col].astype(bool)
 
-        # -------- Rangos --------
         for col in ["BounceRates", "ExitRates"]:
             if col in df.columns:
                 df[col] = df[col].clip(0,1)
+
         for col in ["Administrative_Duration","Informational_Duration","ProductRelated_Duration"]:
             if col in df.columns:
                 df[col] = df[col].clip(lower=0)
+                
+                
+        #One-Hot Encoding (CONVIERTE MONTH Y VISITOR_TYPE A BINARIO)
 
-        # -------- One-Hot Encoding para Month y VisitorType --------
         cat_cols = []
         if "Month" in df.columns:
             cat_cols.append("Month")
@@ -109,8 +133,10 @@ class APS_Solver:
 
         if cat_cols:
             df = pd.get_dummies(df, columns=cat_cols, drop_first=True)
+        
+        
+        #Escalado de variables numéricas
 
-        # -------- Escalado numérico --------
         num_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c != "Revenue"]
         if fit:
             self.scaler = StandardScaler()
@@ -121,7 +147,7 @@ class APS_Solver:
         return df
 
     # ------------------------------------------------------
-    # CORRECCIÓN DE MESES (difflib)
+    # CORRECCIÓN DE MESES
     # ------------------------------------------------------
     def _correct_month(self, val):
         valid_months_full = {
@@ -133,9 +159,7 @@ class APS_Solver:
         match = difflib.get_close_matches(val_clean, list(valid_months_full.keys()), n=1, cutoff=0.0)
         return valid_months_full[match[0]] if match else val_clean[:3].title()
 
-    # ------------------------------------------------------
-    # ENTRENAR MODELO
-    # ------------------------------------------------------
+
     def train_model(self, file_path):
         df = pd.read_csv(file_path)
         df = self._preprocess(df, fit=True)
@@ -157,9 +181,7 @@ class APS_Solver:
         print("Recall:", recall_score(y_val, y_pred))
         print("F1-score:", f1_score(y_val, y_pred))
 
-    # ------------------------------------------------------
-    # TEST FINAL
-    # ------------------------------------------------------
+
     def test_model(self, file_path):
         df = pd.read_csv(file_path)
         df = self._preprocess(df, fit=False)
@@ -174,75 +196,83 @@ class APS_Solver:
         print("Recall:", recall_score(y, y_pred))
         print("F1-score:", f1_score(y, y_pred))
 
+   
     # ------------------------------------------------------
-    # CLUSTERING SEPARADO POR REVENUE
+    # CLUSTERING SEPARADO POR REVENUE + FEATURE ENGINEERING
     # ------------------------------------------------------
     def cluster_data(self, file_path, k_true=4, k_false=4, save_excel=True):
-        # Usar dataset preprocesado
         df = pd.read_csv(file_path)
-        df_proc = self._preprocess(df, fit=True)
     
-        # Separar por Revenue
-        df_true = df_proc[df_proc["Revenue"]==True].copy()
-        df_false = df_proc[df_proc["Revenue"]==False].copy()
-    
+        num_cols = [
+            'Administrative','Administrative_Duration',
+            'Informational','Informational_Duration',
+            'ProductRelated','ProductRelated_Duration',
+            'BounceRates','ExitRates','PageValues','SpecialDay'
+        ]
+        for col in num_cols:
+            if col in df.columns:
+                df[col] = df[col].fillna(df[col].median())
+
+        cat_cols = ['Month', 'VisitorType', 'Weekend',
+                    'OperatingSystems','Browser','Region','TrafficType']
+        
+        
+        for col in cat_cols:
+            if col in df.columns:
+                df[col] = df[col].fillna(df[col].mode()[0])
+
+        numeric_transformer = Pipeline([('scaler', StandardScaler())])
+        categorical_transformer = Pipeline([('onehot', OneHotEncoder(handle_unknown='ignore'))])
+
+        self.preprocessor_cluster = ColumnTransformer(
+            transformers=[
+                ('num', numeric_transformer, [c for c in num_cols if c in df.columns]),
+                ('cat', categorical_transformer, [c for c in cat_cols if c in df.columns])
+            ]
+        )
+
         def cluster_group(df_group, k, label):
-            # Usar todas las columnas excepto Revenue
-            X = df_group.drop(columns=["Revenue"]).values
+            X = self.preprocessor_cluster.fit_transform(df_group)
             kmeans = KMeans(n_clusters=k, random_state=42, n_init=20)
             sub_labels = kmeans.fit_predict(X)
+
             df_group['cluster_sub'] = sub_labels
             df_group['cluster_global'] = label
-    
+
+            # identificador único del cluster
+            df_group['cluster_id'] = df_group['cluster_global'] + "_" + df_group['cluster_sub'].astype(str)
+
             # PCA para visualización
+            X_dense = X.toarray() if hasattr(X, "toarray") else X
             pca = PCA(n_components=2, random_state=42)
-            X_pca = pca.fit_transform(X)
-            df_group["PC1"] = X_pca[:,0]
-            df_group["PC2"] = X_pca[:,1]
-    
-            plt.figure(figsize=(8,6))
+            X_pca = pca.fit_transform(X_dense)
+            df_group["PC1"] = X_pca[:, 0]
+            df_group["PC2"] = X_pca[:, 1]
+
+            # Plot
+            plt.figure(figsize=(8, 6))
             for c in range(k):
-                pts = X_pca[sub_labels==c]
-                plt.scatter(pts[:,0], pts[:,1], alpha=0.6, label=f'Subcluster {c}')
+                pts = X_pca[sub_labels == c]
+                plt.scatter(pts[:, 0], pts[:, 1], alpha=0.6, label=f'Subcluster {c}')
             plt.title(f'PCA – {label}')
-            plt.xlabel('PC1'); plt.ylabel('PC2'); plt.legend()
+            plt.xlabel('PC1')
+            plt.ylabel('PC2')
+            plt.legend()
             plt.show()
-    
+
             return df_group
-    
-        df_true = cluster_group(df_true, k_true, "Revenue_True")
-        df_false = cluster_group(df_false, k_false, "Revenue_False")
-    
+
+        df_true = cluster_group(df[df["Revenue"] == True].copy(), k_true, "Revenue_True")
+        df_false = cluster_group(df[df["Revenue"] == False].copy(), k_false, "Revenue_False")
+
         df_out = pd.concat([df_true, df_false]).sort_index()
-    
+
         if save_excel:
             df_out.to_excel("database_clusters.xlsx", index=False)
             print("\nArchivo generado: database_clusters.xlsx")
-    
+
         return df_out
     
-    
-
-
-
-
-
-
-
-# ============================================================
-#  USO
-# ============================================================
-
-df = pd.read_csv("online_shoppers_forStudents.csv")
-train_df, test_df = train_test_split(df, test_size=0.3, random_state=42, stratify=df["Revenue"])
-train_df.to_csv("online_shoppers_train.csv", index=False)
-test_df.to_csv("online_shoppers_test.csv", index=False)
-
-model = APS_Solver()
-print('Para el train:')
+model = APS_Solver() 
 model.train_model("online_shoppers_train.csv")
-print('\nPara el test:')
-model.test_model("online_shoppers_test.csv")
-
-# Llamada al clustering (usa archivo Excel original)
-model.cluster_data("online_shoppers_forStudents.csv", k_true=4, k_false=4)
+model.test_model("online_shoppers_test.csv") 
