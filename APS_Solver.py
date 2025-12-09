@@ -30,9 +30,8 @@ class APS_Solver:
                     self.scaler,
                     self.label_encoders,
                     self.preprocessor_cluster
-                ),
-                f
-            )
+                ), f)
+  
         print(f"Modelo guardado en: {file_path}")
 
     def load_model(self, file_path):
@@ -160,6 +159,7 @@ class APS_Solver:
 
 
     def train_model(self, file_path):
+        
         df = pd.read_csv(file_path)
         df = self._preprocess(df, fit=True)
 
@@ -167,7 +167,7 @@ class APS_Solver:
         y = df["Revenue"].astype(int)
 
         X_train, X_val, y_train, y_val = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
+            X, y, test_size=0.3, random_state=42, stratify=y
         )
 
         self.model = RandomForestClassifier(n_estimators=300, max_depth=12, random_state=42)
@@ -179,6 +179,7 @@ class APS_Solver:
         print("Precisión:", precision_score(y_val, y_pred))
         print("Recall:", recall_score(y_val, y_pred))
         print("F1-score:", f1_score(y_val, y_pred))
+        print('\n')
 
 
     def test_model(self, file_path):
