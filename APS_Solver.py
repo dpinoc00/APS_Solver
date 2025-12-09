@@ -68,14 +68,13 @@ class APS_Solver:
     # LIMPIEZA Y PREPROCESADO
     # ------------------------------------------------------
     def _preprocess(self, df, fit=True):
-        
-        #eliminar duplicados
+        # eliminar duplicados
         df = df.copy().drop_duplicates()
-
-        #eliminar col poco correlacionadas con Revenue
-        drop_cols = ["OperatingSystems", "Browser", "Region", "TrafficType"]
+    
+        # eliminar col poco correlacionadas con Revenue
+        drop_cols = ["OperatingSystems", "Browser"]
         df = df.drop(columns=[c for c in drop_cols if c in df.columns])
-
+    
         num_cols = [
             "Administrative","Administrative_Duration",
             "Informational","Informational_Duration",
@@ -85,10 +84,10 @@ class APS_Solver:
         for col in num_cols:
             if col in df.columns:
                 df[col] = df[col].fillna(df[col].median())
-
+    
         if "SpecialDay" in df.columns:
             df["SpecialDay"] = df["SpecialDay"].fillna(0)
-
+    
         if "VisitorType" in df.columns:
             df["VisitorType"] = (
                 df["VisitorType"]
@@ -105,46 +104,46 @@ class APS_Solver:
                 "new_visitor": "New_Visitor"
             }
             df["VisitorType"] = df["VisitorType"].replace(visitor_map).fillna("Other")
-
+    
         if "Month" in df.columns:
             df["Month"] = df["Month"].astype(str).str.strip()
             df["Month"] = df["Month"].apply(self._correct_month)
-
+    
         for col in ["Weekend", "Revenue"]:
             if col in df.columns:
                 df[col] = df[col].astype(bool)
-
+    
         for col in ["BounceRates", "ExitRates"]:
             if col in df.columns:
                 df[col] = df[col].clip(0,1)
-
+    
         for col in ["Administrative_Duration","Informational_Duration","ProductRelated_Duration"]:
             if col in df.columns:
                 df[col] = df[col].clip(lower=0)
-                
-                
-        #One-Hot Encoding (CONVIERTE MONTH Y VISITOR_TYPE A BINARIO)
-
+    
+        # One-Hot Encoding (Month, VisitorType, Region, TrafficType)
         cat_cols = []
-        if "Month" in df.columns:
-            cat_cols.append("Month")
-        if "VisitorType" in df.columns:
-            cat_cols.append("VisitorType")
-
+        for c in ["Month", "VisitorType", "Region", "TrafficType"]:
+            if c in df.columns:
+                cat_cols.append(c)
+    
         if cat_cols:
             df = pd.get_dummies(df, columns=cat_cols, drop_first=True)
-        
-        
-        #Escalado de variables numéricas
-
+    
+        # Escalado de variables numéricas
         num_cols = [c for c in df.select_dtypes(include=[np.number]).columns if c != "Revenue"]
         if fit:
             self.scaler = StandardScaler()
             df[num_cols] = self.scaler.fit_transform(df[num_cols])
+            # Guardamos columnas finales para test
+            self.feature_columns = df.columns.drop("Revenue")
         else:
             df[num_cols] = self.scaler.transform(df[num_cols])
-
+            # Reindexamos para que coincidan con columnas de entrenamiento
+            df = df.reindex(columns=list(self.feature_columns) + ["Revenue"], fill_value=0)
+    
         return df
+
 
     # ------------------------------------------------------
     # CORRECCIÓN DE MESES
@@ -212,18 +211,18 @@ class APS_Solver:
         for col in num_cols:
             if col in df.columns:
                 df[col] = df[col].fillna(df[col].median())
-
+    
         cat_cols = ['Month', 'VisitorType', 'Weekend',
                     'OperatingSystems','Browser','Region','TrafficType']
-        
-        
         for col in cat_cols:
             if col in df.columns:
                 df[col] = df[col].fillna(df[col].mode()[0])
-
+    
         numeric_transformer = Pipeline([('scaler', StandardScaler())])
-        categorical_transformer = Pipeline([('onehot', OneHotEncoder(handle_unknown='ignore'))])
-
+        categorical_transformer = Pipeline([
+            ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+        ])
+    
         self.preprocessor_cluster = ColumnTransformer(
             transformers=[
                 ('num', numeric_transformer, [c for c in num_cols if c in df.columns]),
@@ -235,21 +234,17 @@ class APS_Solver:
             X = self.preprocessor_cluster.fit_transform(df_group)
             kmeans = KMeans(n_clusters=k, random_state=42, n_init=20)
             sub_labels = kmeans.fit_predict(X)
-
+    
             df_group['cluster_sub'] = sub_labels
             df_group['cluster_global'] = label
-
-            # identificador único del cluster
             df_group['cluster_id'] = df_group['cluster_global'] + "_" + df_group['cluster_sub'].astype(str)
-
-            # PCA para visualización
+    
             X_dense = X.toarray() if hasattr(X, "toarray") else X
             pca = PCA(n_components=2, random_state=42)
             X_pca = pca.fit_transform(X_dense)
             df_group["PC1"] = X_pca[:, 0]
             df_group["PC2"] = X_pca[:, 1]
-
-            # Plot
+    
             plt.figure(figsize=(8, 6))
             for c in range(k):
                 pts = X_pca[sub_labels == c]
@@ -259,19 +254,21 @@ class APS_Solver:
             plt.ylabel('PC2')
             plt.legend()
             plt.show()
-
+    
             return df_group
-
+    
         df_true = cluster_group(df[df["Revenue"] == True].copy(), k_true, "Revenue_True")
         df_false = cluster_group(df[df["Revenue"] == False].copy(), k_false, "Revenue_False")
-
+    
         df_out = pd.concat([df_true, df_false]).sort_index()
-
+    
         if save_excel:
             df_out.to_excel("database_clusters.xlsx", index=False)
             print("\nArchivo generado: database_clusters.xlsx")
-
+    
         return df_out
+
+      
     
 model = APS_Solver() 
 model.train_model("online_shoppers_train.csv")
