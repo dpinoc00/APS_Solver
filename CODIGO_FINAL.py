@@ -121,7 +121,7 @@ class APS_Solver:
             X, y, test_size=0.3, random_state=42, stratify=y
         )
 
-        self.model = RandomForestClassifier(n_estimators=300, max_depth=12, random_state=42, class_weight="balanced")
+        self.model = RandomForestClassifier(n_estimators=550, max_depth=12, random_state=42, class_weight="balanced")
 
         self.model.fit(X_train, y_train)
 
@@ -155,7 +155,7 @@ class APS_Solver:
     # CLUSTERING SEPARADO POR REVENUE + FEATURE ENGINEERING
     # ------------------------------------------------------
 
-    def cluster_data(self, file_path, k=8, save_csv=True):
+    def cluster_data(self, file_path, k=6, save_csv=True):
         df = pd.read_csv(file_path)
 
         num_cols = ['Administrative','Total_Duration','Informational',
@@ -187,7 +187,6 @@ class APS_Solver:
 
         if save_csv:
             df.to_csv("database_clusters.csv", index=False)
-            print("\nArchivo generado: database_clusters.csv")
 
         self.preprocessor_cluster = preprocessor
         return df
@@ -219,7 +218,6 @@ class APS_Solver:
         plt.show()
     
         return df_group
-
 
 
 model = APS_Solver() 
