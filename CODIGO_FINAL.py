@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-import matplotlib as plt
 import pickle
 import difflib
+import matplotlib.pyplot as plt
 
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
@@ -71,12 +71,17 @@ class APS_Solver:
         # Llenar NaNs en numéricas
         for col in num_cols:
             df[col] = df[col].fillna(df[col].median())
-    
+        
+        # Llamar a la funcion clean para que repase todos los valores a cambiar
+        for col in cat_cols:
+            df[col] = df[col].apply(self._clean_str)
+
+        
         # Limpiar y aproximar categorías de manera general
         for col in cat_cols:
             df[col] = df[col].astype(str).str.strip().str.lower()
             valid_vals = df[col].dropna().unique()
-            df[col] = df[col].apply(lambda x: difflib.get_close_matches(x, valid_vals, n=1, cutoff=0.7)[0] if difflib.get_close_matches(x, valid_vals, n=1, cutoff=0.7) else x)
+            df[col] = df[col].apply(lambda x: self._closest(x, valid_vals))
     
         # One-Hot Encoding
         df = pd.get_dummies(df, columns=cat_cols, drop_first=True)
@@ -184,40 +189,19 @@ class APS_Solver:
         X_pca = pca.fit_transform(X_dense)
         df["PC1"] = X_pca[:, 0]
         df["PC2"] = X_pca[:, 1]
-
+        plt.figure(figsize=(8, 6))
+        scatter = plt.scatter(df["PC1"], df["PC2"], c=df["cluster"], cmap="tab10", alpha=0.7)
+        plt.title("Visualización de Clusters con PCA")
+        plt.xlabel("PC1")
+        plt.ylabel("PC2")
+        plt.legend(*scatter.legend_elements(), title="Clusters")
+        plt.grid(True)
+        plt.show()
         if save_csv:
             df.to_csv("database_clusters.csv", index=False)
 
         self.preprocessor_cluster = preprocessor
         return df
-
-    def cluster_group(self, df_group, k, label="Global"):
-        X = self.preprocessor_cluster.transform(df_group)
-        kmeans = KMeans(n_clusters=k, random_state=42, n_init=20)
-        cluster_labels = kmeans.fit_predict(X)
-
-        df_group['cluster'] = cluster_labels
-        df_group['cluster_global'] = label
-        df_group['cluster_id'] = df_group['cluster_global'] + "_" + df_group['cluster'].astype(str)
-
-        X_dense = X.toarray() if hasattr(X, "toarray") else X
-        pca = PCA(n_components=2, random_state=42)
-        X_pca = pca.fit_transform(X_dense)
-        df_group["PC1"] = X_pca[:, 0]
-        df_group["PC2"] = X_pca[:, 1]
-
-        # Visual opcional
-        plt.figure(figsize=(8, 6))
-        for c in range(k):
-            pts = X_pca[cluster_labels == c]
-            plt.scatter(pts[:, 0], pts[:, 1], alpha=0.6, label=f'Cluster {c}')
-        plt.title(f'PCA – {label}')
-        plt.xlabel('PC1')
-        plt.ylabel('PC2')
-        plt.legend()
-        plt.show()
-    
-        return df_group
 
 
 model = APS_Solver() 
