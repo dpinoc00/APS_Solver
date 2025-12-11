@@ -115,8 +115,8 @@ class APS_Solver:
     # ENTRENAMIENTO
     # -----------------------------------------------------------
     def train_model(self, file_path):
-        self.cluster_data(file_path, save_csv=True)
-        df = pd.read_csv(file_path)
+        self.cluster_data(file_path, save_csv=True, gafas = True)
+        df = pd.read_csv("database_clusters.csv")
         df = self._preprocess(df, fit=True)
 
         X = df.drop(columns=["Revenue"])
@@ -142,8 +142,8 @@ class APS_Solver:
     # TESTEO
     # -----------------------------------------------------------
     def test_model(self, file_path):
-        self.cluster_data(file_path, save_csv=True)
-        df = pd.read_csv(file_path)
+        self.cluster_data(file_path, save_csv=True, gafas= False)
+        df = pd.read_csv("database_clusters.csv")
         df = self._preprocess(df, fit=False)
 
         X = df.drop(columns=["Revenue"])
@@ -156,11 +156,11 @@ class APS_Solver:
         print("Recall:", recall_score(y, y_pred))
         print("F1-score:", f1_score(y, y_pred))
 
-    # ------------------------------------------------------
-    # CLUSTERING SEPARADO POR REVENUE + FEATURE ENGINEERING
-    # ------------------------------------------------------
+    # ---------------------------------------------------------------
+    # CLUSTERING SEPARADO POR REVENUE E INGENIERIA DE CARACTERISTICAS
+    # ---------------------------------------------------------------
 
-    def cluster_data(self, file_path, k=6, save_csv=True):
+    def cluster_data(self, file_path, k=9, save_csv=True, gafas = True):
         df = pd.read_csv(file_path)
 
         num_cols = ['Administrative','Total_Duration','Informational',
@@ -191,7 +191,10 @@ class APS_Solver:
         df["PC2"] = X_pca[:, 1]
         plt.figure(figsize=(8, 6))
         scatter = plt.scatter(df["PC1"], df["PC2"], c=df["cluster"], cmap="tab10", alpha=0.7)
-        plt.title("Visualización de Clusters con PCA")
+        if gafas:
+            plt.title("Visualización de Clusters en el TRAIN con PCA")
+        else:
+            plt.title("Visualización de Clusters en el TEST con PCA")
         plt.xlabel("PC1")
         plt.ylabel("PC2")
         plt.legend(*scatter.legend_elements(), title="Clusters")
@@ -202,8 +205,3 @@ class APS_Solver:
 
         self.preprocessor_cluster = preprocessor
         return df
-
-
-model = APS_Solver() 
-model.train_model("online_shoppers_train.csv")
-model.test_model("online_shoppers_test.csv") 
